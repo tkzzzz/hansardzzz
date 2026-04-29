@@ -89,6 +89,7 @@ export async function PlayerPage(extId: string): Promise<HTMLElement> {
       if (hasApiKey()) {
         const s = getSettings();
         let firstChunk = true;
+        loadingBanner.hidden = false;
         controller = speakSequenceOpenAi(
           texts,
           { apiKey: s.apiKey, voice: s.voice, model: s.model, speed: ttsOptions.rate },
@@ -104,7 +105,6 @@ export async function PlayerPage(extId: string): Promise<HTMLElement> {
           },
           handleDone,
         );
-        loadingBanner.hidden = false;
       } else {
         controller = speakSequence(
           texts,

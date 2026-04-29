@@ -103,10 +103,6 @@ export function speakSequenceOpenAi(
         ? fetchAndPreload(nextItem.chunk, opts)
         : Promise.resolve(null);
 
-      if (i === 0 || items[i - 1].textIndex !== textIndex) {
-        onProgress(textIndex);
-      }
-
       let prepared: PreparedAudio | null;
       try {
         prepared = await prefetch;
@@ -123,6 +119,12 @@ export function speakSequenceOpenAi(
       if (stopped) { revokeAll(); return; }
       await waitWhilePaused();
       if (stopped) { revokeAll(); return; }
+
+      // Signal progress (highlight + hide loading banner) right before playback,
+      // once per contribution rather than per chunk
+      if (i === 0 || items[i - 1].textIndex !== textIndex) {
+        onProgress(textIndex);
+      }
 
       // Audio is already loaded — play immediately
       currentAudio = prepared.audio;
