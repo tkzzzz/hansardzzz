@@ -1,7 +1,7 @@
 import { getDebate } from '../api/hansard';
 import type { Debate, DebateItem } from '../api/types';
 import { ContributionList, highlightContribution } from '../components/ContributionList';
-import { TtsControls, markPlayDone, markLoading, markReady } from '../components/TtsControls';
+import { TtsControls, markPlayDone, markReady } from '../components/TtsControls';
 import { speakSequence, stripHtml, stripParentheticals } from '../tts/speech';
 import type { TtsController, TtsOptions } from '../tts/speech';
 import { speakSequenceOpenAi } from '../tts/openai';
@@ -17,7 +17,9 @@ export async function PlayerPage(extId: string): Promise<HTMLElement> {
   let controller: TtsController | null = null;
   const ttsOptions: TtsOptions = { rate: getSettings().speed, pitch: 1.0, voice: null };
   let selectedIndex: number | null = null;
-  const errorBanner = el('p', { class: 'status status--error' });
+  const errorBanner   = el('p', { class: 'status status--error' });
+  const loadingBanner = el('p', { class: 'status status--loading' }, '⏳ Fetching audio from OpenAI…');
+  loadingBanner.hidden = true;
 
   if (getState()) stopPlaying();
 
@@ -86,27 +88,31 @@ export async function PlayerPage(extId: string): Promise<HTMLElement> {
 
       if (hasApiKey()) {
         const s = getSettings();
-        markLoading(controls);
         let firstChunk = true;
         controller = speakSequenceOpenAi(
           texts,
           { apiKey: s.apiKey, voice: s.voice, model: s.model, speed: ttsOptions.rate },
           (i) => {
-            if (firstChunk) { firstChunk = false; markReady(controls); }
+            if (firstChunk) { firstChunk = false; markReady(controls); loadingBanner.hidden = true; }
             highlightContribution(listEl, i < 0 ? -1 : startIndex + i);
           },
           (msg) => {
+            loadingBanner.hidden = true;
             errorBanner.textContent = `TTS error: ${msg}. Check your API key in Settings.`;
             markPlayDone(controls);
             markDone();
           },
           handleDone,
         );
+        loadingBanner.hidden = false;
       } else {
         controller = speakSequence(
           texts,
           ttsOptions,
-          (i) => highlightContribution(listEl, i < 0 ? -1 : startIndex + i),
+          (i) => {
+            if (i === 0) markReady(controls);
+            highlightContribution(listEl, i < 0 ? -1 : startIndex + i);
+          },
           handleDone,
         );
       }
@@ -146,17 +152,18 @@ export async function PlayerPage(extId: string): Promise<HTMLElement> {
       {
         onPlay() {
           errorBanner.textContent = '';
+          loadingBanner.hidden = true;
           startSpeaking(debate, contributions);
         },
         onPause()  { controller?.pause(); },
         onResume() { controller?.resume(); },
-        onStop()   { stopPlaying(); controller = null; },
+        onStop()   { stopPlaying(); controller = null; loadingBanner.hidden = true; },
         onRateChange(r) { ttsOptions.rate = r; durationEl.textContent = estimateListeningTime(totalWords, r); },
         onVoiceChange(v) { ttsOptions.voice = v; },
       },
     );
 
-    page.append(header, errorBanner, listWrapper, controls);
+    page.append(header, errorBanner, loadingBanner, listWrapper, controls);
   } catch {
     status.textContent = 'Could not load this debate. It may not exist or the API is unavailable.';
   }

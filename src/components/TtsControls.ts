@@ -33,10 +33,11 @@ export function TtsControls(state: TtsState, cb: TtsControlsCallbacks): HTMLElem
       btnPlay.disabled  = true;
       btnPause.disabled = false;
     } else {
+      btnPlay.disabled     = true;
+      btnPause.textContent = '⏳ Loading…';
+      btnPause.disabled    = true;
+      btnStop.disabled     = false;
       cb.onPlay();
-      btnPlay.disabled  = true;
-      btnPause.disabled = false;
-      btnStop.disabled  = false;
     }
   });
 
