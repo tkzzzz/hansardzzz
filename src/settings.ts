@@ -21,7 +21,7 @@ export function getSettings() {
   return {
     apiKey: localStorage.getItem(KEYS.apiKey) ?? '',
     voice:  (localStorage.getItem(KEYS.voice)  ?? 'onyx') as OpenAiVoice,
-    model:  (localStorage.getItem(KEYS.model)  ?? 'tts-1-hd') as OpenAiModel,
+    model:  (localStorage.getItem(KEYS.model)  ?? 'tts-1') as OpenAiModel,
     speed:  parseFloat(localStorage.getItem(KEYS.speed) ?? '1.0'),
   };
 }

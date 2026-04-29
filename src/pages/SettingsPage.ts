@@ -91,6 +91,16 @@ export function SettingsPage(): HTMLElement {
   if (hasKey) keyStatus.textContent = 'Key saved.';
   keySection.append(keyStatus);
 
+  if (hasKey) {
+    const removeBtn = el('button', { class: 'settings-remove-btn', type: 'button' }, '✕ Remove key — revert to browser TTS');
+    removeBtn.addEventListener('click', () => {
+      if (!confirm('Remove your OpenAI key and revert to browser TTS?')) return;
+      localStorage.removeItem('hansardzzz_openai_key');
+      window.location.reload();
+    });
+    keySection.append(removeBtn);
+  }
+
   // ── Voice ────────────────────────────────────────────────────────────────────
   const voiceSection = el('section', { class: 'settings-section' });
   voiceSection.append(el('h3', { class: 'settings-heading' }, 'Voice'));
@@ -132,13 +142,13 @@ export function SettingsPage(): HTMLElement {
   modelSection.append(el('h3', { class: 'settings-heading' }, 'Model'));
   modelSection.append(
     el('p', { class: 'settings-hint' },
-      'tts-1-hd sounds noticeably better; tts-1 responds faster and costs half as much.'),
+      'tts-1 is faster and half the cost — the quality difference is barely noticeable. tts-1-hd is available if you want to compare.'),
   );
 
   const modelSelect = el('select', { class: 'form-select', disabled: !hasKey } as Partial<HTMLSelectElement>);
   for (const [value, label] of [
-    ['tts-1-hd', 'tts-1-hd — high quality (recommended)'],
-    ['tts-1',    'tts-1 — faster, cheaper'],
+    ['tts-1',    'tts-1 — faster, cheaper (recommended)'],
+    ['tts-1-hd', 'tts-1-hd — higher quality'],
   ] as const) {
     const opt = el('option', { value }, label);
     if (settings.model === value) opt.selected = true;

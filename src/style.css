@@ -708,6 +708,19 @@ body {
 }
 
 .settings-save-btn { margin-top: 0.5rem; }
+.settings-remove-btn {
+  display: block;
+  margin-top: 0.6rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--error);
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.75;
+  text-decoration: underline;
+}
+.settings-remove-btn:hover { opacity: 1; }
 
 .voice-grid {
   display: grid;
